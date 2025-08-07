@@ -1,0 +1,33 @@
+# /etc/systemd/system/a.service
+[Unit]
+Description=My Node.js Application Service      # 서비스의 간단한 설명을 보여줍니다.
+After=network.target                            # 네트워크가 준비된 후에 이 서비스가 시작되도록 합니다.
+
+[Service]
+Type=simple                                     # 프로세스가 포그라운드(pid 1)가 되면 활성 상태로 간주합니다.
+User=nodeuser                                   # 이 서비스를 실행할 사용자 계정
+Group=nodegroup                                 # 이 서비스를 실행할 그룹
+WorkingDirectory=/home/nodeuser/app             # 상대 경로가 아닌 서비스 실행 위치
+
+# 애플리케이션 실행
+ExecStart=/usr/bin/node /home/nodeuser/app/server.js
+# graceful shutdown을 위해 SIGTERM 전송 시 호출할 명령을 정의할 수 있습니다.
+# ExecStop=/usr/bin/kill -s SIGINT $MAINPID
+
+# SIGTERM 후 종료 로직 완료 대기 시간 (기본 90초)
+TimeoutStopSec=30s
+
+# 프로세스가 비정상 종료될 때 재시작 정책 설정
+Restart=on-failure                              # 실패(exit code ≠ 0) 시에만 재시작
+# RestartSec=5                                  # 재시작 전 대기 시간 (기본 100ms)
+
+# 표준 입출력 처리: 로그를 journal에 남깁니다.
+StandardOutput=journal
+StandardError=journal
+
+# 환경변수 설정 (필요 시)
+# Environment=NODE_ENV=production
+# EnvironmentFile=/etc/sysconfig/a-app
+
+[Install]
+WantedBy=multi-user.target                      # runlevel 3 같은 전통적 멀티유저 모드에 포함

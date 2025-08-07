@@ -72,7 +72,7 @@ export default function Home() {
                   <li key={i}
                       onClick={() => {
                         setOptionName(optionName);
-                        document.activeElement.blur();
+                        (document.activeElement as (HTMLElement | null))?.blur();
                       }}><a>{optionName}</a></li>
                 ))}
               </ul>
