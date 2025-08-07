@@ -1,103 +1,159 @@
-import Image from "next/image";
+"use client";
+
+import { request } from "@/app/proxy";
+import {useEffect, useState, useTransition} from "react";
+import {options} from "@/app/constant";
+
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const fileNames = ["/files/0.jpg", "/files/1.jpg", "/files/2.jpg", "/files/3.jpg"];
+  const optionNames = Object.keys(options);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const [isPending, startTransition] = useTransition();
+  const [countList, setCountList] = useState<number[]>([0, 0, 0, 0]);
+  const [imageList, setImageList] = useState<File[]>([]);
+  const [optionName, setOptionName] = useState<string>(optionNames[0]);
+
+  useEffect(() => {
+    (async function(): Promise<File[]> {
+      const responses = await Promise.all(fileNames.map((fileName) => fetch(fileName)));
+      const blobs = await Promise.all(responses.map(e => e.blob()));
+
+      const imageList = [];
+      for (let i = 0; i < blobs.length; i++) {
+        imageList.push(new File([blobs[i]], fileNames[i], { type: blobs[i].type }));
+      }
+      return imageList;
+    })().then((imageList) => setImageList(imageList));
+  }, []);
+
+  const MAX_COUNT = 20;
+
+  function changeCountList(n: number, count: number) {
+    console.log(`count: ${count}`);
+
+    // validate count value
+    if(count > MAX_COUNT) return;
+    if(isNaN(count)) count = 0;
+
+    const newCountList = [...countList];
+    newCountList[n] = count;
+    setCountList(newCountList);
+  }
+
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    const formData = new FormData();
+    for(let i = 0; i < countList.length; i++) {
+      formData.append("images", imageList[i]);
+      formData.append("count", `${countList[i]}`);
+    }
+    formData.append("option_name", optionName);
+
+    startTransition(() => {
+      request(formData);
+    });
+
+  }
+
+  return (
+    <div className={"w-screen"}>
+      <div className={"navbar w-full shadow-sm"}>
+        <p className={"text-3xl font-bold"}>이미지 스케일업 성능 평가</p>
+      </div>
+      <div className={"flex flex-row items-stretch p-4 gap-x-4"}>
+        <div className={"flex-1 flex flex-col min-w-80 p-8 border-2 border-black"}>
+          <div className={"h-14 flex flex-row justify-start items-center gap-x-4"}>
+            <div className="dropdown">
+              <div tabIndex={0} role="button" className="w-54 btn m-1">{optionName}</div>
+              <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+                {optionNames.map((optionName, i) => (
+                  <li key={i}
+                      onClick={() => {
+                        setOptionName(optionName);
+                        document.activeElement.blur();
+                      }}><a>{optionName}</a></li>
+                ))}
+              </ul>
+            </div>
+            <p className={"text-2xl font-bold"}>요청</p>
+          </div>
+          <div className={"divider"}></div>
+          <form encType={"multipart/form-data"} onSubmit={onSubmit}>
+            <div className={"flex flex-row gap-x-10 p-2 overflow-x-auto"}>
+              <div className={"bg-neutral-100 flex flex-col items-center gap-y-4 p-4"}>
+                <div style={{backgroundImage: `url(${fileNames[0]})`}}
+                     className={`w-60 h-60 bg-white bg-contain bg-no-repeat bg-center`}></div>
+                <p>크기: 251.38KB</p>
+                <input type="number"
+                       placeholder={`개수 (${MAX_COUNT}개 미만)`}
+                       value={countList[0]}
+                       onChange={(e) => {
+                         const value = parseInt(e.target.value);
+                         e.target.value = "";
+                         changeCountList(0, value);
+                       }}
+                       className={"input"}/>
+              </div>
+              <div className={"w-80 bg-neutral-100 flex flex-col items-center gap-y-4 p-4"}>
+                <div style={{backgroundImage: `url(${fileNames[1]})`}}
+                     className={`w-60 h-60 bg-white bg-contain bg-no-repeat bg-center`}></div>
+                <p>크기: 3.19MB</p>
+                <input type="number"
+                       placeholder={`개수 (${MAX_COUNT}개 미만)`}
+                       value={countList[1]}
+                       onChange={(e) => {
+                         const value = parseInt(e.target.value);
+                         e.target.value = "";
+                         changeCountList(1, value);
+                       }}
+                       className={"input"}/>
+              </div>
+              <div className={"w-80 bg-neutral-100 flex flex-col items-center gap-y-4 p-4"}>
+                <div style={{backgroundImage: `url(${fileNames[2]})`}}
+                     className={`w-60 h-60 bg-white bg-contain bg-no-repeat bg-center`}></div>
+                <p>크기: 8MB</p>
+                <input type="number"
+                       placeholder={`개수 (${MAX_COUNT}개 미만)`}
+                       value={countList[2]}
+                       onChange={(e) => {
+                         const value = parseInt(e.target.value);
+                         e.target.value = "";
+                         changeCountList(2, value);
+                       }}
+                       className={"input"}/>
+              </div>
+              <div className={"w-80 bg-neutral-100 flex flex-col items-center gap-y-4 p-4"}>
+                <div style={{backgroundImage: `url(${fileNames[3]})`}}
+                     className={`w-60 h-60 bg-white bg-contain bg-no-repeat bg-center`}></div>
+                <p>크기: 15.8MB</p>
+                <input type="number"
+                       placeholder={`개수 (${MAX_COUNT}개 미만)`}
+                       value={countList[3]}
+                       onChange={(e) => {
+                         const value = parseInt(e.target.value);
+                         e.target.value = "";
+                         changeCountList(3, value);
+                       }}
+                       className={"input"}/>
+              </div>
+            </div>
+            <div className={"flex flex-col items-center"}>
+              <button disabled={(imageList.length == 0) || isPending} className={"btn w-60 mt-10"}>요청 보내기</button>
+            </div>
+          </form>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <div className={"flex-none w-100 p-8 border-2 border-black"}>
+          <div className={"h-14 flex flex-row items-center"}>
+            <p className={"text-2xl font-bold"}>로그</p>
+          </div>
+          <div className={"divider"}></div>
+          <div>
+
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
