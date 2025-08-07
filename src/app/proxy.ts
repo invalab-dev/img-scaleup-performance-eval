@@ -3,7 +3,8 @@
 import postgres from "postgres";
 import {options} from "@/app/constant";
 
-const sql = postgres("postgres://postgres:gksdnr0825$@localhost:5432/image_scaleup_performance_evaluation");
+// TODO: cloud server로 변경 필요
+const sql = postgres("postgres://postgres:invalabdev2023!@localhost:5432/image_scaleup_performance_evaluation");
 
 export async function request(formData: FormData) {
   const images = formData.getAll("images") as File[];
@@ -35,7 +36,7 @@ async function uploadImages(host: string, images: File[], count: number[]): Prom
 
 class Result {
   public job_id!: string;
-  constructor(public readonly task_id: string | undefined,
+  constructor(public readonly task_id: string | null,
               public readonly image_size: number,
               public readonly success: boolean) {}
 }
@@ -52,7 +53,7 @@ async function uploadImage(host: string, image: File): Promise<Result> {
 
   const json = await response.json();
   if(!json.success) {
-    return new Result(undefined, imageSize, false);
+    return new Result(null, imageSize, false);
   }
   const taskId = json.task_id;
 
@@ -66,8 +67,9 @@ async function uploadImage(host: string, image: File): Promise<Result> {
       if(json.status == "done") {
         clearInterval(cancel);
         const result = new Result(taskId, imageSize, true);
+        console.log(`result: ${JSON.stringify(result)}`);
         resolve(result);
       }
-    }, 200);
+    }, 500);
   });
 }

@@ -1,0 +1,15 @@
+[Unit]
+Description=image-scaleup-performance-evaluation app
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/image-scaleup-performance-evaluation
+ExecStart=/root/.nvm/versions/node/v22.18.0/bin/node server.js
+Restart=on-failure
+Environment=NODE_ENV=production
+Environment=PORT=3000
+
+[Install]
+WantedBy=multi-user.target
