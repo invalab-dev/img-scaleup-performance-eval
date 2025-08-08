@@ -66,7 +66,7 @@ jobs:
       - name: Unzip artifact for deployment
         run: |
             mkdir image-scaleup-performance-evaluation
-            unzip release.zip -d ./image-scaleup-performance-evaluation/
+            unzip release.zip -d ./image-scaleup-performance-evaluation
           
       - name: Clean target directory
         uses: appleboy/ssh-action@v1.0.3
