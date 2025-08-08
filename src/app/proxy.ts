@@ -4,7 +4,7 @@ import postgres from "postgres";
 import {options} from "@/app/constant";
 
 // TODO: cloud server로 변경 필요
-const sql = postgres("postgres://postgres:invalabdev2023!@localhost:5432/image_scaleup_performance_evaluation");
+const sql = postgres(process.env.POSTGRES_URL!);
 
 export async function request(formData: FormData) {
   const images = formData.getAll("images") as File[];

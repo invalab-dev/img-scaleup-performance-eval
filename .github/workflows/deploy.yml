@@ -36,6 +36,9 @@ jobs:
       - name: Move public folder(assets) into standalone
         run: cp -r public .next/standalone/public
 
+      - name: Move .env into standalone
+        run: cp .env .next/standalone
+
         # release.zip 안에는 standalone(포함x) 내부 파일과 폴더만 가집니다.
       - name: Zip artifact for deployment
         run: |
@@ -84,9 +87,9 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            mkdir -p image-scaleup-performance-evaluation
-            rm -rf ./image-scaleup-performance-evaluation/*
-            unzip release.zip -d ./image-scaleup-performance-evaluation
+            mkdir -p img-scaleup-performance-eval
+            rm -rf ./img-scaleup-performance-eval/*
+            unzip release.zip -d ./img-scaleup-performance-eval
             rm release.zip
 
       - name: Restart systemd service
@@ -96,6 +99,6 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/image-scaleup-performance-evaluation
+            cd ~/img-scaleup-performance-eval
             npm install --omit=dev
-            sudo systemctl restart image-scaleup-performance-evaluation
+            sudo systemctl restart img-scaleup-performance-eval
