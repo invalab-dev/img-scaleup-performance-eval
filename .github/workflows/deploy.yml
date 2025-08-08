@@ -30,14 +30,14 @@ jobs:
         # 따라서 정적 파일을 포함하지 않으며, 이를 제공하기 위해서는
         # 정적 파일을 .next/standalone 내부로 옮겨야 합니다.
       - name: Move static files into standalone
-        run: cp -r .next/static .next/standalone/.next/static
+        run: cp -rf .next/static .next/standalone/.next/static
 
         # public/ 에 있는 이미지들도 위와 동일한 이유로 .next/standalone 내부로 옮겨야 합니다.
       - name: Move public folder(assets) into standalone
-        run: cp -r public .next/standalone/public
+        run: cp -rf public .next/standalone/public
 
       - name: Move .env into standalone
-        run: cp .env .next/standalone
+        run: cp -f .env .next/standalone
 
         # release.zip 안에는 standalone(포함x) 내부 파일과 폴더만 가집니다.
       - name: Zip artifact for deployment
