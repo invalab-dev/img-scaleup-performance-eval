@@ -1,4 +1,4 @@
-name: Build and deploy image-scaleup-performance-evaluation
+name: Build and deploy img-scaleup-performance-eval
 
 on:
   push:
