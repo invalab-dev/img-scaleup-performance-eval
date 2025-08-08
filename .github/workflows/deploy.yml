@@ -90,7 +90,7 @@ jobs:
             mkdir -p img-scaleup-performance-eval
             rm -rf ./img-scaleup-performance-eval/*
             unzip release.zip -d ./img-scaleup-performance-eval
-            rm release.zip
+            
 
       - name: Restart systemd service
         uses: appleboy/ssh-action@v1.0.3
