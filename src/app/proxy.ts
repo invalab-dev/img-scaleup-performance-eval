@@ -18,7 +18,7 @@ export async function request(formData: FormData) {
   if(option == Option.local_GPU) {
     results = await uploadImages("http://superres.invalab.com", images, count, localUploadImage);
   } else if(option == Option.cloud_GPU) {
-    results = await uploadImages("http://10.0.2.8:81", images, count, localUploadImage);
+    results = await uploadImages("http://10.0.2.8:81", images, count, cloudUploadImage);
   } else if(option == Option.cloud_GPU_and_nestjs) {
 
   } else {
