@@ -49,7 +49,7 @@ export default function Home() {
       formData.append("images", imageList[i]);
       formData.append("count", `${countList[i]}`);
     }
-    formData.append("option_name", optionName);
+    formData.append("option", optionName);
 
     startTransition(() => {
       request(formData);
