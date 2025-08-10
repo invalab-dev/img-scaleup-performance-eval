@@ -2,12 +2,12 @@
 
 import { request } from "@/app/proxy";
 import {useEffect, useState, useTransition} from "react";
-import {options} from "@/app/constant";
+import {Option} from "@/app/class";
 
 
 export default function Home() {
   const fileNames = ["/files/0.jpg", "/files/1.jpg", "/files/2.jpg", "/files/3.jpg"];
-  const optionNames = Object.keys(options);
+  const optionNames = Object.values(Option);
 
   const [isPending, startTransition] = useTransition();
   const [countList, setCountList] = useState<number[]>([0, 0, 0, 0]);
