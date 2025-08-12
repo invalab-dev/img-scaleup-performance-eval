@@ -15,11 +15,11 @@ export async function uploadImages(formData: FormData) {
 
   let uploadResponses!: UploadResponse[];
   const requestTime = new Date().toISOString();
-  if (option == Option["local GPU"]) {
+  if (option == Option.LOCAL_GPU) {
     uploadResponses = await _uploadImages(images, count, localUploadImage);
-  } else if (option == Option["cloud GPU"]) {
+  } else if (option == Option.CLOUD_GPU) {
     uploadResponses = await _uploadImages(images, count, cloudUploadImage);
-  } else if (option == Option["cloud GPU + nest.js"]) {
+  } else if (option == Option.CLOUD_GPU_AND_NEXT_JS) {
 
   } else {
     throw `${option}: 없는 옵션입니다.`;
@@ -46,11 +46,11 @@ export async function uploadImages(formData: FormData) {
 
 export async function checkProgress(option: Option, taskId: string) {
   let progressResponse!: ProgressResponse;
-  if(option == Option["local GPU"]) {
+  if(option == Option.LOCAL_GPU) {
     progressResponse = await localCheckProgress(taskId);
-  } else if(option == Option["cloud GPU"]) {
+  } else if(option == Option.CLOUD_GPU) {
     progressResponse = await cloudCheckProgress(taskId);
-  } else if(option == Option["cloud GPU + nest.js"]) {
+  } else if(option == Option.CLOUD_GPU_AND_NEXT_JS) {
 
   } else {
     throw `${option}: 없는 옵션입니다.`;
