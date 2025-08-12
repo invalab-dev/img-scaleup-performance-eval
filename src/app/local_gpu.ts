@@ -12,7 +12,7 @@ export async function uploadImage(image: File): Promise<UploadResponse> {
     body: formData
   });
 
-  return {...await response.json(), imageSize } as UploadResponse;
+  return {...await response.json(), imageSize} as UploadResponse;
 }
 
 export async function checkProgress(taskId: string) {
