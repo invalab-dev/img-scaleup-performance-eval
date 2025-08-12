@@ -1,18 +1,18 @@
 "use client";
 
-import { request } from "@/app/proxy";
+import {checkProgress, uploadImages} from "@/app/proxy";
 import {useEffect, useState, useTransition} from "react";
-import {Option} from "@/app/class";
+import {Option, ProgressResponse, UploadResponse} from "@/app/class";
 
 
 export default function Home() {
   const fileNames = ["/files/0.jpg", "/files/1.jpg", "/files/2.jpg", "/files/3.jpg"];
-  const optionNames = Object.values(Option);
 
   const [isPending, startTransition] = useTransition();
   const [countList, setCountList] = useState<number[]>([0, 0, 0, 0]);
   const [imageList, setImageList] = useState<File[]>([]);
-  const [optionName, setOptionName] = useState<string>(optionNames[0]);
+  const [option, setOption] = useState<Option>(Option.LOCAL_GPU);
+  const [progressResponses, setProgressResponses] = useState<ProgressResponse[]>([]);
 
   useEffect(() => {
     (async function(): Promise<File[]> {
@@ -27,7 +27,7 @@ export default function Home() {
     })().then((imageList) => setImageList(imageList));
   }, []);
 
-  const MAX_COUNT = 20;
+  const MAX_COUNT = 10;
 
   function changeCountList(n: number, count: number) {
     console.log(`count: ${count}`);
@@ -49,10 +49,27 @@ export default function Home() {
       formData.append("images", imageList[i]);
       formData.append("count", `${countList[i]}`);
     }
-    formData.append("option", optionName);
+    formData.append("option", option);
 
     startTransition(() => {
-      request(formData);
+      uploadImages(formData).then((res) => {
+        const uploadResponses = res.uploadResponses as UploadResponse[];
+
+        console.log(`${uploadResponses.length}개 중 ${uploadResponses.filter((e) => e.success)}개 업로드 성공`);
+
+        const cancel = setInterval(async () => {
+          const newProgressResponses = [];
+          for(const uploadResponse of uploadResponses.filter((e) => e.success)) {
+            const progressResponse = await checkProgress(option, uploadResponse.taskId!);
+            newProgressResponses.push(progressResponse);
+          }
+          if(newProgressResponses.every((e) => e.status == "done" || e.status == "error")) {
+            clearInterval(cancel);
+          }
+
+          setProgressResponses(newProgressResponses);
+        }, 2000);
+      });
     });
 
   }
@@ -66,14 +83,15 @@ export default function Home() {
         <div className={"flex-1 flex flex-col min-w-80 p-8 border-2 border-black"}>
           <div className={"h-14 flex flex-row justify-start items-center gap-x-4"}>
             <div className="dropdown">
-              <div tabIndex={0} role="button" className="w-54 btn m-1">{optionName}</div>
+              <div tabIndex={0} role="button" className="w-54 btn m-1">{option}</div>
               <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
-                {optionNames.map((optionName, i) => (
+                {Object.values(Option).map((option, i) => (
                   <li key={i}
                       onClick={() => {
-                        setOptionName(optionName);
+
+                        setOption(option);
                         (document.activeElement as (HTMLElement | null))?.blur();
-                      }}><a>{optionName}</a></li>
+                      }}><a>{option}</a></li>
                 ))}
               </ul>
             </div>
@@ -150,7 +168,11 @@ export default function Home() {
           </div>
           <div className={"divider"}></div>
           <div>
-
+            {progressResponses.map((progressResponse, i) => (
+              <div key={i}>
+                {JSON.stringify(progressResponses)}
+              </div>
+            ))}
           </div>
         </div>
       </div>

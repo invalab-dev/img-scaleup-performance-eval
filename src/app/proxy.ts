@@ -1,46 +1,71 @@
 "use server";
 
 import postgres from "postgres";
-import {uploadImage as localUploadImage } from "@/app/local_gpu";
-import {uploadImage as cloudUploadImage } from "@/app/local_gpu";
-import {Option, Result, UploadResponse} from "@/app/class";
+import {uploadImage as localUploadImage, checkProgress as localCheckProgress} from "@/app/local_gpu";
+import {uploadImage as cloudUploadImage, checkProgress as cloudCheckProgress} from "@/app/local_gpu";
+import {Option, ProgressResponse, UploadResponse} from "@/app/class";
 
 // TODO: cloud server로 변경 필요
 const sql = postgres(process.env.POSTGRES_URL!);
 
-export async function request(formData: FormData) {
+export async function uploadImages(formData: FormData) {
   const images = formData.getAll("images") as File[];
   const count = formData.getAll("count").map((e) => parseInt(e as string));
   const option = formData.get("option") as string;
 
-   try {
-     let uploadResponses!: UploadResponse[];
-     const requestTime = new Date().toISOString();
-     if(option == Option.local_GPU) {
-       uploadResponses = await uploadImages(images, count, localUploadImage);
-     } else if(option == Option.cloud_GPU) {
-       uploadResponses = await uploadImages(images, count, cloudUploadImage);
-     } else if(option == Option.cloud_GPU_and_nestjs) {
+  let uploadResponses!: UploadResponse[];
+  const requestTime = new Date().toISOString();
+  if (option == Option["local GPU"]) {
+    uploadResponses = await _uploadImages(images, count, localUploadImage);
+  } else if (option == Option["cloud GPU"]) {
+    uploadResponses = await _uploadImages(images, count, cloudUploadImage);
+  } else if (option == Option["cloud GPU + nest.js"]) {
 
-     } else {
-       throw `${option}: 없는 옵션입니다.`;
-     }
-     const responseTime = new Date().toISOString();
+  } else {
+    throw `${option}: 없는 옵션입니다.`;
+  }
+  const responseTime = new Date().toISOString();
 
-     const sqlResult1 = await sql`INSERT INTO job(option, request, response) VALUES (${option}, ${requestTime}, ${responseTime}) RETURNING id`;
-     const jobId = sqlResult1.at(0)!.id;
+  const sqlResult1 = await sql`INSERT INTO job(option, request, response)
+                               VALUES (${option}, ${requestTime}, ${responseTime}) RETURNING id`;
+  const jobId = sqlResult1.at(0)!.id as string;
+  await sql`INSERT INTO test_data ${sql(uploadResponses.map((uploadResponse) => {
+    return {
+      job_id: jobId,
+      task_id: uploadResponse.taskId,
+      image_size: uploadResponse.imageSize,
+      ...(uploadResponse.taskId == null && ({success: false}))
+    };
+  }))}`;
 
-     return {
-       job_id: jobId,
-       task_ids: JSON.stringify(uploadResponses),
-     };
-     // await sql`INSERT INTO test_data ${sql(results, "job_id", "task_id", "image_size", "success")}`;
-   } catch(e) {
-     console.log(e);
-   }
+  return {
+    uploadResponses: uploadResponses,
+    option: option
+  };
 }
 
-async function uploadImages(images: File[], count: number[], uploadImage: (image: File) => Promise<UploadResponse>): Promise<UploadResponse[]> {
+export async function checkProgress(option: Option, taskId: string) {
+  let progressResponse!: ProgressResponse;
+  if(option == Option["local GPU"]) {
+    progressResponse = await localCheckProgress(taskId);
+  } else if(option == Option["cloud GPU"]) {
+    progressResponse = await cloudCheckProgress(taskId);
+  } else if(option == Option["cloud GPU + nest.js"]) {
+
+  } else {
+    throw `${option}: 없는 옵션입니다.`;
+  }
+
+  if(progressResponse.status == "done") {
+    await sql`UPDATE test_data SET success = true WHERE task_id = ${taskId}`;
+  } else if(progressResponse.status == "error") {
+    await sql`UPDATE test_data SET success = false WHERE task_id = ${taskId}`;
+  }
+
+  return progressResponse;
+}
+
+async function _uploadImages(images: File[], count: number[], uploadImage: (image: File) => Promise<UploadResponse>): Promise<UploadResponse[]> {
   const tasks = [];
   for(let i = 0; i < count.length; i++) {
     for(let j = 0; j < count[i]; j++) {

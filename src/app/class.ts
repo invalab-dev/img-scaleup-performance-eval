@@ -1,13 +1,7 @@
-export class Result {
-  public job_id!: string;
-  constructor(public readonly task_id: string | null,
-              public readonly image_size: number,
-              public readonly success: boolean) {}
-}
-
 export class UploadResponse {
-  constructor(public readonly success: boolean,
-              public readonly task_id: string) {}
+  constructor(public readonly success: boolean = false,
+              public readonly taskId: string | null = null,
+              public readonly imageSize: number | null = null,) {}
 }
 
 export class ProgressResponse {
@@ -17,7 +11,7 @@ export class ProgressResponse {
 }
 
 export enum Option {
-  local_GPU = "local GPU",
-  cloud_GPU = "cloud GPU",
-  cloud_GPU_and_nestjs = "cloud GPU + nest.js"
+  LOCAL_GPU = "local GPU",
+  CLOUD_GPU = "cloud GPU",
+  CLOUD_GPU_AND_NEXT_JS = "cloud GPU + nest.js",
 }

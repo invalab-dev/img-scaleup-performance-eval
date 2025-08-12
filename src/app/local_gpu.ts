@@ -15,8 +15,8 @@ export async function uploadImage(image: File): Promise<UploadResponse> {
   return {...await response.json(), imageSize } as UploadResponse;
 }
 
-export async function checkProgress(task_id: string) {
-  const response = await fetch(`${HOST}/progress/${task_id}`, {
+export async function checkProgress(taskId: string) {
+  const response = await fetch(`${HOST}/progress/${taskId}`, {
     method: "GET",
   });
   return await response.json() as ProgressResponse;
