@@ -5,6 +5,17 @@ export class Result {
               public readonly success: boolean) {}
 }
 
+export class UploadResponse {
+  constructor(public readonly success: boolean,
+              public readonly task_id: string) {}
+}
+
+export class ProgressResponse {
+  constructor(public readonly progress: number,
+              public readonly filename: string,
+              public readonly status: string) {}
+}
+
 export enum Option {
   local_GPU = "local GPU",
   cloud_GPU = "cloud GPU",

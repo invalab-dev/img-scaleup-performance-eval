@@ -3,7 +3,7 @@
 import postgres from "postgres";
 import {uploadImage as localUploadImage } from "@/app/local_gpu";
 import {uploadImage as cloudUploadImage } from "@/app/local_gpu";
-import {Option, Result} from "@/app/class";
+import {Option, Result, UploadResponse} from "@/app/class";
 
 // TODO: cloud server로 변경 필요
 const sql = postgres(process.env.POSTGRES_URL!);
@@ -14,12 +14,12 @@ export async function request(formData: FormData) {
   const option = formData.get("option") as string;
 
    try {
-     let results!: Result[];
+     let uploadResponses!: UploadResponse[];
      const requestTime = new Date().toISOString();
      if(option == Option.local_GPU) {
-       results = await uploadImages("http://superres.invalab.com", images, count, localUploadImage);
+       uploadResponses = await uploadImages(images, count, localUploadImage);
      } else if(option == Option.cloud_GPU) {
-       results = await uploadImages("http://10.0.2.8:81", images, count, cloudUploadImage);
+       uploadResponses = await uploadImages(images, count, cloudUploadImage);
      } else if(option == Option.cloud_GPU_and_nestjs) {
 
      } else {
@@ -29,15 +29,18 @@ export async function request(formData: FormData) {
 
      const sqlResult1 = await sql`INSERT INTO job(option, request, response) VALUES (${option}, ${requestTime}, ${responseTime}) RETURNING id`;
      const jobId = sqlResult1.at(0)!.id;
-     results.forEach((result) => result.job_id = jobId);
 
-     await sql`INSERT INTO test_data ${sql(results, "job_id", "task_id", "image_size", "success")}`;
+     return {
+       job_id: jobId,
+       task_ids: JSON.stringify(uploadResponses),
+     };
+     // await sql`INSERT INTO test_data ${sql(results, "job_id", "task_id", "image_size", "success")}`;
    } catch(e) {
      console.log(e);
    }
 }
 
-async function uploadImages(host: string, images: File[], count: number[], uploadImage: (host: string, image: File) => Promise<Result>): Promise<Result[]> {
+async function uploadImages(images: File[], count: number[], uploadImage: (image: File) => Promise<UploadResponse>): Promise<UploadResponse[]> {
   const tasks = [];
   for(let i = 0; i < count.length; i++) {
     for(let j = 0; j < count[i]; j++) {
@@ -45,5 +48,5 @@ async function uploadImages(host: string, images: File[], count: number[], uploa
     }
   }
 
-  return await Promise.all(tasks.map((task) => uploadImage(host, task)));
+  return await Promise.all(tasks.map((task) => uploadImage(task)));
 }

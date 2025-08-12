@@ -1,34 +1,23 @@
-import {Result} from "@/app/class";
+import {ProgressResponse, UploadResponse} from "@/app/class";
 
-export async function uploadImage(host: string, image: File): Promise<Result> {
+const HOST = "http://superres.invalab.com";
+
+export async function uploadImage(image: File): Promise<UploadResponse> {
   const imageSize = image.size;
   const formData = new FormData();
   formData.append("file", image);
 
-  const response = await fetch(`${host}/upload`, {
+  const response = await fetch(`${HOST}/upload`, {
     method: "POST",
     body: formData
   });
 
-  const json = await response.json();
-  if(!json.success) {
-    return new Result(null, imageSize, false);
-  }
-  const taskId = json.task_id;
+  return {...await response.json(), imageSize } as UploadResponse;
+}
 
-  return await new Promise<Result>((resolve) => {
-    const cancel = setInterval(async function() {
-      const response = await fetch(`${host}/progress/${taskId}`, {
-        method: "GET",
-      });
-      const json = await response.json();
-
-      if(json.status == "done") {
-        clearInterval(cancel);
-        const result = new Result(taskId, imageSize, true);
-        console.log(`result: ${JSON.stringify(result)}`);
-        resolve(result);
-      }
-    }, 500);
+export async function checkProgress(task_id: string) {
+  const response = await fetch(`${HOST}/progress/${task_id}`, {
+    method: "GET",
   });
+  return await response.json() as ProgressResponse;
 }
