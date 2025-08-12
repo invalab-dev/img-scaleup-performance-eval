@@ -34,7 +34,8 @@ export async function uploadImages(formData: FormData) {
       job_id: jobId,
       task_id: uploadResponse.taskId,
       image_size: uploadResponse.imageSize,
-      ...(uploadResponse.taskId == null && ({success: false}))
+      success: uploadResponse.taskId == null ? false : null,
+      request: new Date().toISOString()
     };
   }))}`;
 
@@ -57,7 +58,7 @@ export async function checkProgress(option: Option, taskId: string) {
   }
 
   if(progressResponse.status == "done") {
-    await sql`UPDATE test_data SET success = true WHERE task_id = ${taskId}`;
+    await sql`UPDATE test_data SET success = true, response = ${new Date().toISOString()} WHERE task_id = ${taskId}`;
   } else if(progressResponse.status == "error") {
     await sql`UPDATE test_data SET success = false WHERE task_id = ${taskId}`;
   }

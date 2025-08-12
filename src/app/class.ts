@@ -1,5 +1,5 @@
 export class UploadResponse {
-  constructor(public readonly success: boolean = false,
+  constructor(public readonly success: boolean,
               public readonly taskId: string | null = null,
               public readonly imageSize: number | null = null,) {}
 }
