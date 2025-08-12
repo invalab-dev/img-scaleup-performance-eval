@@ -2,7 +2,7 @@
 
 import postgres from "postgres";
 import {uploadImage as localUploadImage, checkProgress as localCheckProgress} from "@/app/local_gpu";
-import {uploadImage as cloudUploadImage, checkProgress as cloudCheckProgress} from "@/app/local_gpu";
+import {uploadImage as cloudUploadImage, checkProgress as cloudCheckProgress} from "@/app/cloud_gpu";
 import {Option, ProgressResponse, UploadResponse} from "@/app/class";
 
 // TODO: cloud server로 변경 필요
