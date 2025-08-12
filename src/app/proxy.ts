@@ -30,8 +30,7 @@ export async function uploadImages(formData: FormData) {
                                VALUES (${option}, ${requestTime}, ${responseTime}) RETURNING id`;
   const jobId = sqlResult1.at(0)!.id as string;
 
-  console.log(`jobId: ${jobId}`);
-  console.log(`sql data: ${uploadResponses.map((uploadResponse) => {
+  console.log(`sql data: ${JSON.stringify(uploadResponses.map((uploadResponse) => {
     return {
       job_id: jobId,
       task_id: uploadResponse.taskId,
@@ -39,7 +38,7 @@ export async function uploadImages(formData: FormData) {
       success: uploadResponse.taskId == null ? false : null,
       request: new Date().toISOString()
     };
-  })}`)
+  }))}`)
 
   await sql`INSERT INTO test_data ${sql(uploadResponses.map((uploadResponse) => {
     return {
