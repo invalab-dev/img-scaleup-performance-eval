@@ -53,11 +53,10 @@ export default function Home() {
 
     startTransition(() => {
       uploadImages(formData).then((res) => {
-        console.log(`[1]res: ${res}`);
 
         const uploadResponses = res.uploadResponses as UploadResponse[];
 
-        console.log(`${uploadResponses.length}개 중 ${uploadResponses.filter((e) => e.task_id != null)}개 업로드 성공`);
+        console.log(`${uploadResponses.length}개 중 ${uploadResponses.filter((e) => e.task_id != null).length}개 업로드 성공`);
 
         const cancel = setInterval(async () => {
           const newProgressResponses = [];
@@ -65,7 +64,6 @@ export default function Home() {
             const progressResponse = await checkProgress(option, uploadResponse.task_id!);
             newProgressResponses.push(progressResponse);
           }
-          console.log(`[2]newProgressResponses: ${newProgressResponses}`);
           if(newProgressResponses.every((e) => e.status == "done" || e.status == "error")) {
             clearInterval(cancel);
           }
