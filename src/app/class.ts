@@ -5,7 +5,6 @@ export class UploadResponse {
 
 export class ProgressResponse {
   constructor(public readonly progress: number,
-              public readonly filename: string,
               public readonly status: string) {}
 }
 

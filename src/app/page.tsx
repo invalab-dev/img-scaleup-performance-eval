@@ -171,7 +171,7 @@ export default function Home() {
           <div>
             {progressResponses.map((progressResponse, i) => (
               <div key={i}>
-                {JSON.stringify(progressResponses)}
+                {JSON.stringify(progressResponses[i])}
               </div>
             ))}
           </div>
