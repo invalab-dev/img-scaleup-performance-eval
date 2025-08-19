@@ -11,7 +11,7 @@ export default function Home() {
   const [isPending, startTransition] = useTransition();
   const [countList, setCountList] = useState<number[]>([0, 0, 0, 0]);
   const [imageList, setImageList] = useState<File[]>([]);
-  const [option, setOption] = useState<Option>(Option.LOCAL_GPU);
+  const [option, setOption] = useState<Option>(Option.CLOUD_GPU_AND_NEXT_JS);
   const [progressResponses, setProgressResponses] = useState<ProgressResponse[]>([]);
 
   useEffect(() => {
