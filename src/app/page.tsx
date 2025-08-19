@@ -56,11 +56,11 @@ export default function Home() {
 
         const uploadResponses = res.uploadResponses as UploadResponse[];
 
-        console.log(`${uploadResponses.length}개 중 ${uploadResponses.filter((e) => e. != null).length}개 업로드 성공`);
+        console.log(`${uploadResponses.length}개 중 ${uploadResponses.filter((e) => e.success).length}개 업로드 성공`);
 
         const cancel = setInterval(async () => {
           const newProgressResponses = [];
-          for(const uploadResponse of uploadResponses.filter((e) => e.filename != null)) {
+          for(const uploadResponse of uploadResponses.filter((e) => e.success)) {
             const progressResponse = await checkProgress(version, uploadResponse.filename!);
             newProgressResponses.push(progressResponse);
           }
