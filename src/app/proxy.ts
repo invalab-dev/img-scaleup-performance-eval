@@ -3,6 +3,7 @@
 import postgres from "postgres";
 import {uploadImage as localUploadImage, checkProgress as localCheckProgress} from "@/app/local_gpu";
 import {uploadImage as cloudUploadImage, checkProgress as cloudCheckProgress} from "@/app/cloud_gpu";
+import {uploadImage as nestUploadImage, checkProgress as nestCheckProgress} from "@/app/cloud_gpu_and_nest_js";
 import {Version, ProgressResponse, UploadResponse} from "@/app/class";
 
 // TODO: cloud server로 변경 필요
@@ -20,7 +21,7 @@ export async function uploadImages(formData: FormData) {
   } else if (version == Version.CLOUD_GPU) {
     uploadResponses = await _uploadImages(images, count, cloudUploadImage);
   } else if (version == Version.CLOUD_GPU_AND_NEXT_JS) {
-
+    uploadResponses = await _uploadImages(images, count, nestUploadImage);
   } else {
     throw `${version}: 없는 버전입니다.`;
   }
@@ -52,7 +53,7 @@ export async function checkProgress(version: Version, taskId: string) {
   } else if(version == Version.CLOUD_GPU) {
     progressResponse = await cloudCheckProgress(taskId);
   } else if(version == Version.CLOUD_GPU_AND_NEXT_JS) {
-
+    progressResponse = await nestCheckProgress(taskId);
   } else {
     throw `${version}: 없는 버전입니다.`;
   }
