@@ -13,7 +13,9 @@ export async function uploadImage(image: File): Promise<UploadResponse> {
         body: formData
     });
 
-    return {...await response.json(), imageSize } as UploadResponse;
+    const result = {...await response.json(), imageSize } as UploadResponse;
+    console.log(`result: ${JSON.stringify(result)}`);
+    return result;
 }
 
 export async function checkProgress(filename: string) {
