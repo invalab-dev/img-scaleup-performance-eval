@@ -56,12 +56,12 @@ export default function Home() {
 
         const uploadResponses = res.uploadResponses as UploadResponse[];
 
-        console.log(`${uploadResponses.length}개 중 ${uploadResponses.filter((e) => e.task_id != null).length}개 업로드 성공`);
+        console.log(`${uploadResponses.length}개 중 ${uploadResponses.filter((e) => e. != null).length}개 업로드 성공`);
 
         const cancel = setInterval(async () => {
           const newProgressResponses = [];
-          for(const uploadResponse of uploadResponses.filter((e) => e.task_id != null)) {
-            const progressResponse = await checkProgress(version, uploadResponse.task_id!);
+          for(const uploadResponse of uploadResponses.filter((e) => e.filename != null)) {
+            const progressResponse = await checkProgress(version, uploadResponse.filename!);
             newProgressResponses.push(progressResponse);
           }
           if(newProgressResponses.every((e) => e.status == "done" || e.status == "error")) {

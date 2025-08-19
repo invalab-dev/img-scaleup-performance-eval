@@ -1,6 +1,7 @@
 export class UploadResponse {
-  constructor(public readonly task_id: string | null = null,
-              public readonly imageSize: number | null = null,) {}
+  constructor(public readonly filename: string | null = null,
+              public readonly imageSize: number | null = null,
+              public readonly success: boolean) {}
 }
 
 export class ProgressResponse {

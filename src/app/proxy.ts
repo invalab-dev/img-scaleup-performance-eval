@@ -33,8 +33,8 @@ export async function uploadImages(formData: FormData) {
 
   await sql`INSERT INTO test_data ${sql(uploadResponses.map((uploadResponse) => {
     return {
-      job_id: jobId,
-      task_id: uploadResponse.task_id,
+      jobId: jobId,
+      filename: uploadResponse.filename,
       image_size: uploadResponse.imageSize,
       request: new Date().toISOString()
     };
@@ -46,22 +46,22 @@ export async function uploadImages(formData: FormData) {
   };
 }
 
-export async function checkProgress(version: Version, taskId: string) {
+export async function checkProgress(version: Version, filename: string) {
   let progressResponse!: ProgressResponse;
   if(version == Version.LOCAL_GPU) {
-    progressResponse = await localCheckProgress(taskId);
+    progressResponse = await localCheckProgress(filename);
   } else if(version == Version.CLOUD_GPU) {
-    progressResponse = await cloudCheckProgress(taskId);
+    progressResponse = await cloudCheckProgress(filename);
   } else if(version == Version.CLOUD_GPU_AND_NEXT_JS) {
-    progressResponse = await nestCheckProgress(taskId);
+    progressResponse = await nestCheckProgress(filename);
   } else {
     throw `${version}: 없는 버전입니다.`;
   }
 
   if(progressResponse.status == "done") {
-    await sql`UPDATE test_data SET success = true, response = ${new Date().toISOString()} WHERE task_id = ${taskId}`;
+    await sql`UPDATE test_data SET success = true, response = ${new Date().toISOString()} WHERE filename = ${filename}`;
   } else if(progressResponse.status == "error") {
-    await sql`UPDATE test_data SET success = false WHERE task_id = ${taskId}`;
+    await sql`UPDATE test_data SET success = false WHERE filename = ${filename}`;
   }
 
   return progressResponse;
