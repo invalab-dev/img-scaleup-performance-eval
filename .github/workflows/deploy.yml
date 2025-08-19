@@ -41,7 +41,7 @@ jobs:
 
         # .service를 standalone과 압축하여 서버로 전송합니다.
       - name: Move .service into standalone
-        run: cp -f img-scaleup-performance-eval.service
+        run: cp -f img-scaleup-performance-eval.service .next/standalone
 
         # release.zip 안에는 standalone(폴더 포함x) 내부 파일과 폴더들만 가집니다.
       - name: Zip artifact for deployment
