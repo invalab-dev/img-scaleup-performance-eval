@@ -8,7 +8,7 @@ export class ProgressResponse {
               public readonly status: string) {}
 }
 
-export enum Option {
+export enum Version {
   LOCAL_GPU = "local GPU",
   CLOUD_GPU = "cloud GPU",
   CLOUD_GPU_AND_NEXT_JS = "cloud GPU + nest.js",

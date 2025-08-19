@@ -2,7 +2,7 @@
 
 import {checkProgress, uploadImages} from "@/app/proxy";
 import {useEffect, useState, useTransition} from "react";
-import {Option, ProgressResponse, UploadResponse} from "@/app/class";
+import {Version, ProgressResponse, UploadResponse} from "@/app/class";
 
 
 export default function Home() {
@@ -11,7 +11,7 @@ export default function Home() {
   const [isPending, startTransition] = useTransition();
   const [countList, setCountList] = useState<number[]>([0, 0, 0, 0]);
   const [imageList, setImageList] = useState<File[]>([]);
-  const [option, setOption] = useState<Option>(Option.CLOUD_GPU_AND_NEXT_JS);
+  const [version, setVersion] = useState<Version>(Version.CLOUD_GPU_AND_NEXT_JS);
   const [progressResponses, setProgressResponses] = useState<ProgressResponse[]>([]);
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function Home() {
       formData.append("images", imageList[i]);
       formData.append("count", `${countList[i]}`);
     }
-    formData.append("option", option);
+    formData.append("version", version);
 
     startTransition(() => {
       uploadImages(formData).then((res) => {
@@ -61,7 +61,7 @@ export default function Home() {
         const cancel = setInterval(async () => {
           const newProgressResponses = [];
           for(const uploadResponse of uploadResponses.filter((e) => e.task_id != null)) {
-            const progressResponse = await checkProgress(option, uploadResponse.task_id!);
+            const progressResponse = await checkProgress(version, uploadResponse.task_id!);
             newProgressResponses.push(progressResponse);
           }
           if(newProgressResponses.every((e) => e.status == "done" || e.status == "error")) {
@@ -84,15 +84,15 @@ export default function Home() {
         <div className={"flex-1 flex flex-col min-w-80 p-8 border-2 border-black"}>
           <div className={"h-14 flex flex-row justify-start items-center gap-x-4"}>
             <div className="dropdown">
-              <div tabIndex={0} role="button" className="w-54 btn m-1">{option}</div>
+              <div tabIndex={0} role="button" className="w-54 btn m-1">{version}</div>
               <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
-                {Object.values(Option).map((option, i) => (
+                {Object.values(Version).map((version, i) => (
                   <li key={i}
                       onClick={() => {
 
-                        setOption(option);
+                        setVersion(version);
                         (document.activeElement as (HTMLElement | null))?.blur();
-                      }}><a>{option}</a></li>
+                      }}><a>{version}</a></li>
                 ))}
               </ul>
             </div>

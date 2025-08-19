@@ -3,7 +3,7 @@
 import postgres from "postgres";
 import {uploadImage as localUploadImage, checkProgress as localCheckProgress} from "@/app/local_gpu";
 import {uploadImage as cloudUploadImage, checkProgress as cloudCheckProgress} from "@/app/cloud_gpu";
-import {Option, ProgressResponse, UploadResponse} from "@/app/class";
+import {Version, ProgressResponse, UploadResponse} from "@/app/class";
 
 // TODO: cloud server로 변경 필요
 const sql = postgres(process.env.POSTGRES_URL!);
@@ -11,23 +11,23 @@ const sql = postgres(process.env.POSTGRES_URL!);
 export async function uploadImages(formData: FormData) {
   const images = formData.getAll("images") as File[];
   const count = formData.getAll("count").map((e) => parseInt(e as string));
-  const option = formData.get("option") as string;
+  const version = formData.get("version") as string;
 
   let uploadResponses!: UploadResponse[];
   const requestTime = new Date().toISOString();
-  if (option == Option.LOCAL_GPU) {
+  if (version == Version.LOCAL_GPU) {
     uploadResponses = await _uploadImages(images, count, localUploadImage);
-  } else if (option == Option.CLOUD_GPU) {
+  } else if (version == Version.CLOUD_GPU) {
     uploadResponses = await _uploadImages(images, count, cloudUploadImage);
-  } else if (option == Option.CLOUD_GPU_AND_NEXT_JS) {
+  } else if (version == Version.CLOUD_GPU_AND_NEXT_JS) {
 
   } else {
-    throw `${option}: 없는 옵션입니다.`;
+    throw `${version}: 없는 버전입니다.`;
   }
   const responseTime = new Date().toISOString();
 
-  const sqlResult1 = await sql`INSERT INTO job(option, request, response)
-                               VALUES (${option}, ${requestTime}, ${responseTime}) RETURNING id`;
+  const sqlResult1 = await sql`INSERT INTO job(version, request, response)
+                               VALUES (${version}, ${requestTime}, ${responseTime}) RETURNING id`;
   const jobId = sqlResult1.at(0)!.id as string;
 
   await sql`INSERT INTO test_data ${sql(uploadResponses.map((uploadResponse) => {
@@ -41,20 +41,20 @@ export async function uploadImages(formData: FormData) {
 
   return {
     uploadResponses: uploadResponses,
-    option: option
+    version: version
   };
 }
 
-export async function checkProgress(option: Option, taskId: string) {
+export async function checkProgress(version: Version, taskId: string) {
   let progressResponse!: ProgressResponse;
-  if(option == Option.LOCAL_GPU) {
+  if(version == Version.LOCAL_GPU) {
     progressResponse = await localCheckProgress(taskId);
-  } else if(option == Option.CLOUD_GPU) {
+  } else if(version == Version.CLOUD_GPU) {
     progressResponse = await cloudCheckProgress(taskId);
-  } else if(option == Option.CLOUD_GPU_AND_NEXT_JS) {
+  } else if(version == Version.CLOUD_GPU_AND_NEXT_JS) {
 
   } else {
-    throw `${option}: 없는 옵션입니다.`;
+    throw `${version}: 없는 버전입니다.`;
   }
 
   if(progressResponse.status == "done") {
