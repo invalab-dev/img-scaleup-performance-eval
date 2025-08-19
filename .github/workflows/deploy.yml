@@ -87,10 +87,8 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            rm -rf img-scaleup-performance-eval
             mkdir img-scaleup-performance-eval
-            cd img-scaleup-performance-eval
-            rm -rf .
-            cd ..
             unzip release.zip -d img-scaleup-performance-eval
             rm release.zip
 
