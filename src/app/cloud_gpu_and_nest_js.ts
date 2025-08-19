@@ -6,7 +6,7 @@ const host = "http://localhost:3001"; // 10.0.2.6
 export async function uploadImage(image: File): Promise<UploadResponse> {
     const imageSize = image.size;
     const formData = new FormData();
-    formData.append("images", image);
+    formData.append("image", image);
 
     const response = await fetch(`${host}/upload`, {
         method: "POST",
