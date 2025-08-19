@@ -39,6 +39,10 @@ jobs:
       - name: Move .env into standalone
         run: cp -rf .env .next/standalone
 
+        # .service를 standalone과 압축하여 서버로 전송합니다.
+      - name: Move .service into standalone
+        run: cp -f img-scaleup-performance-eval.service
+
         # release.zip 안에는 standalone(폴더 포함x) 내부 파일과 폴더들만 가집니다.
       - name: Zip artifact for deployment
         run: |
@@ -80,7 +84,7 @@ jobs:
           source: "./release.zip"
           target: "~"
 
-      - name: Cleanup and unzip
+      - name: Cleanup and unzip on img-scaleup-performance-eval & move .service
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -91,6 +95,7 @@ jobs:
             mkdir img-scaleup-performance-eval
             unzip release.zip -d img-scaleup-performance-eval
             rm release.zip
+            mv -f img-scaleup-performance-eval/img-scaleup-performance-eval.service /etc/systemd/system
 
       - name: Restart systemd service
         uses: appleboy/ssh-action@v1.0.3
