@@ -33,7 +33,7 @@ export async function uploadImages(formData: FormData) {
 
   await sql`INSERT INTO test_data ${sql(uploadResponses.map((uploadResponse) => {
     return {
-      jobId: jobId,
+      job_id: jobId,
       filename: uploadResponse.filename,
       image_size: uploadResponse.imageSize,
       request: new Date().toISOString()
