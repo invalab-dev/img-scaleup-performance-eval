@@ -17,10 +17,15 @@ export async function uploadImages(formData: FormData) {
         const formData = new FormData();
         formData.append("image", job);
 
-        return await fetch(`${baseUrl}/upload`, {
+        const res = await fetch(`${baseUrl}/upload`, {
             method: "POST",
             body: formData
         });
+
+        return {
+          statusCode: res.status,
+          data: await res.json()
+        };
     }));
 }
 

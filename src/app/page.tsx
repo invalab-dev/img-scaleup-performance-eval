@@ -53,12 +53,12 @@ export default function Home() {
     startTransition(() => {
       uploadImages(formData).then((res) => {
 
-        console.log(`${res.length}개 중 ${res.filter((e) => e.status == 200).length}개 업로드 성공`);
+        console.log(`${res.length}개 중 ${res.filter((e) => e.statusCode == 200).length}개 업로드 성공`);
 
         const cancel = setInterval(async () => {
           const newProgressResponses = [];
-          for(const e of res.filter((e) => e.status == 200)) {
-            const json = await e.json();
+          for(const e of res.filter((e) => e.statusCode == 200)) {
+            const json = await e.data;
 
             const progressResponse = await checkProgress(json.filename);
             newProgressResponses.push(progressResponse);
