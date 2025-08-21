@@ -1,3 +1,4 @@
+"use server"
 
 const baseUrl = "http://localhost:3001"; // 10.0.2.6
 
