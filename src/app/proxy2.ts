@@ -22,10 +22,12 @@ export async function uploadImages(formData: FormData) {
             body: formData
         });
 
-        return {
+        const response =  {
           statusCode: res.status,
           data: await res.json()
         };
+        console.log(response);
+        return response;
     }));
 }
 
