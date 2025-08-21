@@ -1,9 +1,8 @@
 "use client";
 
-import {checkProgress, uploadImages} from "@/app/proxy";
+import {checkProgress, uploadImages} from "@/app/proxy2";
 import {useEffect, useState, useTransition} from "react";
 import {Version, ProgressResponse, UploadResponse} from "@/app/class";
-
 
 export default function Home() {
   const fileNames = ["/files/0.jpg", "/files/1.jpg", "/files/2.jpg", "/files/3.jpg"];
@@ -12,7 +11,7 @@ export default function Home() {
   const [countList, setCountList] = useState<number[]>([0, 0, 0, 0]);
   const [imageList, setImageList] = useState<File[]>([]);
   const [version, setVersion] = useState<Version>(Version.CLOUD_GPU_AND_NEXT_JS);
-  const [progressResponses, setProgressResponses] = useState<ProgressResponse[]>([]);
+  const [progressResponses, setProgressResponses] = useState<object[]>([]);
 
   useEffect(() => {
     (async function(): Promise<File[]> {
@@ -54,17 +53,17 @@ export default function Home() {
     startTransition(() => {
       uploadImages(formData).then((res) => {
 
-        const uploadResponses = res.uploadResponses as UploadResponse[];
-
-        console.log(`${uploadResponses.length}개 중 ${uploadResponses.filter((e) => e.success).length}개 업로드 성공`);
+        console.log(`${res.length}개 중 ${res.filter((e) => e.status == 200).length}개 업로드 성공`);
 
         const cancel = setInterval(async () => {
           const newProgressResponses = [];
-          for(const uploadResponse of uploadResponses.filter((e) => e.success)) {
-            const progressResponse = await checkProgress(version, uploadResponse.filename!);
+          for(const e of res.filter((e) => e.status == 200)) {
+            const json = await e.json();
+
+            const progressResponse = await checkProgress(json.filename);
             newProgressResponses.push(progressResponse);
           }
-          if(newProgressResponses.every((e) => e.status == "done" || e.status == "error")) {
+          if(newProgressResponses.every((e) => e.outputPath != null)) {
             clearInterval(cancel);
           }
 
